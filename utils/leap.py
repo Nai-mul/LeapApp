@@ -1,17 +1,14 @@
-from pyrogram.raw.functions.messages import RequestAppWebView
-from pyrogram.raw.types import InputBotAppShortName
-
-
+import aiohttp
+import asyncio
+import random
 from urllib.parse import unquote
 from utils.core import logger
 from fake_useragent import UserAgent
 from pyrogram import Client
 from data import config
 from aiohttp_socks import ProxyConnector
-
-import aiohttp
-import asyncio
-import random
+from pyrogram.raw.functions.messages import RequestAppWebView
+from pyrogram.raw.types import InputBotAppShortName
 
 class Leap:
     def __init__(self, thread: int, account: str, proxy : str):
@@ -67,45 +64,14 @@ class Leap:
             if not login:
                 await self.session.close()
                 return 0
-            await asyncio.sleep(random.uniform(*config.MINI_SLEEP))
-            daily = await self.get_daily_reward()
             
+            await asyncio.sleep(random.uniform(*config.MINI_SLEEP))
+           
+            daily = await self.get_daily_reward()
+            logger.info(f"main | Thread {self.thread} | {self.name} | Daily reward response: {daily_reward}")
+
             await self.get_farewellbonus()
             await self.session.close()
-            # if daily['can_claim']:
-            #     await self.claim_daily_reward()
-                
-            # await asyncio.sleep(random.uniform(*config.MINI_SLEEP))
-            
-            # hours = await self.get_hours_reward()
-            # if hours['can_claim']:
-            #     await self.claim_hours_reward()
-                
-            # await asyncio.sleep(random.uniform(*config.MINI_SLEEP))
-            
-            # quests = await self.get_leap_quests()
-            # for quest in quests:
-            #     if not quest['is_claimed'] and quest['name'] not in config.BLACKLIST_TASKS:
-            #         await self.claim_quest(uuid=quest['uuid'])
-            #         await asyncio.sleep(random.uniform(*config.MINI_SLEEP))
-                    
-            # await asyncio.sleep(random.uniform(*config.MINI_SLEEP))
-            
-            # await self.claim_ref_reward()
-        
-            # user = await self.get_user()
-            
-            # await asyncio.sleep(random.uniform(*config.MINI_SLEEP))
-            
-            
-            # items = await self.get_items()
-            # random.shuffle(items)
-            # for item in items:
-            #     if item['level'] < item['max_level'] and item['upgrade_price'] <= user['points']:
-            #         await self.upgrade_item(uuid=item['uuid'])
-            #         user = await self.get_user()
-            #         await asyncio.sleep(*config.MINI_SLEEP)
-
             logger.info(f"main | Thread {self.thread} | {self.name} | круг окончен")
             return 0
     
@@ -125,8 +91,6 @@ class Leap:
         except Exception as err:
             logger.error(f"upgrade_item | Thread {self.thread} | {self.name} | {err}")
 
-
-    
     async def get_leap_quests(self):
         try:
             response = await self.session.get('https://api.leapapp.fun/api/v1/game/quests/?category=leap')
@@ -143,7 +107,6 @@ class Leap:
         except Exception as err:
             logger.error(f"claim_quest | Thread {self.thread} | {self.name} | {err}")
 
-
     async def claim_ref_reward(self):
         try:
             response = await self.session.get('https://api.leapapp.fun/api/v1/referrals/unclaimed-points/')
@@ -153,7 +116,6 @@ class Leap:
                 return await response.json()
         except Exception as err:
             logger.error(f"claim_ref_reward | Thread {self.thread} | {self.name} | {err}")
-
 
     async def get_hours_reward(self):
         try:
@@ -174,19 +136,24 @@ class Leap:
     async def get_daily_reward(self):
         try:
             response = await self.session.get('https://api.leapapp.fun/api/v1/game/daily-reward/')
-            return await response.json()
+            response_json = await response.json()
+            logger.info(f"get_daily_reward | Thread {self.thread} | {self.name} | Response: {response_json}")
+            return response_json
         except Exception as err:
             logger.error(f"get_daily_reward | Thread {self.thread} | {self.name} | {err}")
-            
+
     async def claim_daily_reward(self):
         try:
             response = await self.session.post('https://api.leapapp.fun/api/v1/game/daily-reward/')
-            if (await response.json())['detail'] == 'Daily reward claimed successfully.':
+            response_json = await response.json()
+            logger.info(f"claim_daily_reward | Thread {self.thread} | {self.name} | Response: {response_json}")
+
+            if response_json.get('detail') == 'Daily reward claimed successfully.':
                 logger.success(f"claim_daily_reward | Thread {self.thread} | {self.name} | SUCCESSFUL CLAIM DAILY REWARD")
-            return await response.json()
+            return response_json
         except Exception as err:
             logger.error(f"claim_daily_reward | Thread {self.thread} | {self.name} | {err}")
-    
+
     async def get_farewellbonus(self):
         response = await self.session.get('https://api.leapapp.fun/api/v1/market/farewell-bonus/')
         response = await response.json()
@@ -208,7 +175,9 @@ class Leap:
         try:
             tg_web_data = await self.get_tg_web_data()
             if tg_web_data == False:
+                logger.info(f"login | Thread {self.thread} | {self.name} | Failed to get Telegram web data.")
                 return False
+            
             json_data = {
                 'initData': tg_web_data,
                 'referral_code': self.ref
@@ -216,16 +185,18 @@ class Leap:
 
             response = await self.session.post('https://api.leapapp.fun/api/v1/auth/', json=json_data)
             response = await response.json()
+            logger.info(f"login | Thread {self.thread} | {self.name} | Login response: {response_json}")
+            
             token = response.get("access_token")
             if token!=None:
                 self.session.headers['authorization'] = f"Bearer {token}"
                 await self.get_user()
                 return True
+            logger.info(f"login | Thread {self.thread} | {self.name} | No token received.")
             return False
         except Exception as err:
             logger.error(f"login | Thread {self.thread} | {self.name} | {err}")
             return False
-
 
     async def get_tg_web_data(self):
         async with self.client:
