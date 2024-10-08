@@ -15,7 +15,7 @@ class Accounts:
             if file.endswith(".session"):
                 sessions.append(file.replace(".session", ""))
 
-        logger.info(f"Найдено сессий: {len(sessions)}!")
+        logger.info(f"Sessions found: {len(sessions)}!")
         return sessions
 
     async def check_valid_sessions(self, sessions: list):
@@ -56,7 +56,7 @@ class Accounts:
                         await client.disconnect()       
                 except:
                     logger.error(f"{session}.session is invalid")
-            logger.success(f"Валидных сессий: {len(valid_sessions)}; Invalid: {len(sessions)-len(valid_sessions)}")
+            logger.success(f"Valid sessions: {len(valid_sessions)}; Invalid: {len(sessions)-len(valid_sessions)}")
                 
         else:
             for session in sessions:
@@ -70,7 +70,7 @@ class Accounts:
                     await client.disconnect()
                 except:
                     logger.error(f"{session}.session is invalid")
-            logger.success(f"Валидных сессий: {len(valid_sessions)}; Invalid: {len(sessions)-len(valid_sessions)}")
+            logger.success(f"Valid sessions: {len(valid_sessions)}; Invalid: {len(sessions)-len(valid_sessions)}")
         return valid_sessions
 
     async def get_accounts(self):
