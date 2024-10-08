@@ -6,7 +6,7 @@ import random
 
 async def create_sessions():
     while True:
-        session_name = input('Введите название сессии (для выхода нажмите Enter)\n')
+        session_name = input('Enter the session name (press Enter to exit)\n')
         if not session_name:
             return
         
@@ -38,7 +38,7 @@ async def create_sessions():
                 async with session:
                     user_data = await session.get_me()
 
-                logger.success(f'Добавлена сессия +{user_data.phone_number} @{user_data.username} PROXY {proxy.split(":")[0]}')
+                logger.success(f'Session added +{user_data.phone_number} @{user_data.username} PROXY {proxy.split(":")[0]}')
             else:
                 
                 session = pyrogram.Client(
@@ -51,7 +51,7 @@ async def create_sessions():
                 async with session:
                     user_data = await session.get_me()
 
-                logger.success(f'Добавлена сессия +{user_data.phone_number} @{user_data.username} PROXY : NONE')
+                logger.success(f'Session added +{user_data.phone_number} @{user_data.username} PROXY : NONE')
         else:
             
             session = pyrogram.Client(
@@ -64,4 +64,4 @@ async def create_sessions():
             async with session:
                 user_data = await session.get_me()
 
-            logger.success(f'Добавлена сессия +{user_data.phone_number} @{user_data.username} PROXY : NONE')
+            logger.success(f'Session added +{user_data.phone_number} @{user_data.username} PROXY : NONE')
