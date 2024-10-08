@@ -19,7 +19,7 @@ class Accounts:
         return sessions
 
     async def check_valid_sessions(self, sessions: list):
-        logger.info(f"Проверяю сессии на валидность!")
+        logger.info(f"Checking sessions validity")
         valid_sessions = []
         if config.USE_PROXY:
             proxy_dict = {}
@@ -56,7 +56,7 @@ class Accounts:
                         await client.disconnect()       
                 except:
                     logger.error(f"{session}.session is invalid")
-            logger.success(f"Валидных сессий: {len(valid_sessions)}; Невалидных: {len(sessions)-len(valid_sessions)}")
+            logger.success(f"Валидных сессий: {len(valid_sessions)}; Invalid: {len(sessions)-len(valid_sessions)}")
                 
         else:
             for session in sessions:
@@ -70,7 +70,7 @@ class Accounts:
                     await client.disconnect()
                 except:
                     logger.error(f"{session}.session is invalid")
-            logger.success(f"Валидных сессий: {len(valid_sessions)}; Невалидных: {len(sessions)-len(valid_sessions)}")
+            logger.success(f"Валидных сессий: {len(valid_sessions)}; Invalid: {len(sessions)-len(valid_sessions)}")
         return valid_sessions
 
     async def get_accounts(self):
@@ -78,6 +78,6 @@ class Accounts:
         accounts = await self.check_valid_sessions(sessions)
 
         if not accounts:
-            raise ValueError("Нет валидных сессий")
+            raise ValueError("There are no valid sessions.")
         else:
             return accounts
